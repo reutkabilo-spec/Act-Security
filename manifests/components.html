@@ -1,0 +1,1997 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Components Manifest</title>
+  <style>
+      :root {
+          --bg: #0b0c10;
+          --panel: #121318;
+          --muted: #9aa0a6;
+          --fg: #e8eaed;
+          --ok: #22c55e;
+          --info: #1e88e5;
+          --err: #c62828;
+          --ok-bg: #0c1a13;
+          --info-bg: #0c1624;
+          --err-bg: #1a0e0e;
+          --chip: #1f2330;
+          --border: #2b2f3a;
+          --link: #8ab4f8;
+          --active-ring: 1px; /* 1px active ring for pills and toggles */
+      }
+
+      * {
+          box-sizing: border-box;
+      }
+
+      html,
+      body {
+          margin: 0;
+          background: var(--bg);
+          color: var(--fg);
+          font: 14px/1.5 system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          Cantarell,
+          'Helvetica Neue',
+          Arial,
+          'Noto Sans';
+      }
+
+      .wrap {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 16px 20px;
+      }
+
+      header {
+          position: sticky;
+          top: 0;
+          backdrop-filter: blur(6px);
+          background: color-mix(in srgb, var(--bg) 84%, transparent);
+          border-bottom: 1px solid var(--border);
+          z-index: 10;
+      }
+
+      h1 {
+          font-size: 20px;
+          margin: 0 0 6px;
+      }
+
+      .summary {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          align-items: center;
+      }
+
+      /* Top filter pills */
+      .filter-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--panel);
+          text-decoration: none;
+          cursor: pointer;
+          user-select: none;
+          color: var(--fg);
+      }
+
+      .filter-pill.ok {
+          color: #b9f6ca;
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+          background: color-mix(in srgb, var(--ok) 18%, #000);
+      }
+
+      .filter-pill.info {
+          color: #b3d9ff;
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+          background: var(--info-bg);
+      }
+
+      .filter-pill.err {
+          color: #ff9aa0;
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+          background: var(--err-bg);
+      }
+
+      .filter-pill.all {
+          color: #d7dbe0;
+          border-color: var(--border);
+          background: var(--panel);
+      }
+
+      .filter-pill[aria-disabled='true'] {
+          cursor: default;
+          text-decoration: none;
+      }
+
+      .filter-pill:focus,
+      .filter-pill:active {
+          outline: none;
+          box-shadow: none;
+      }
+
+      /* Selected top pill ring via :target */
+      #filter-all:target ~ header .filter-pill[data-k='all'],
+      #filter-errors:target ~ header .filter-pill[data-k='errors'],
+      #filter-infos:target ~ header .filter-pill[data-k='infos'],
+      #filter-story-errors:target ~ header .filter-pill[data-k='story-errors'],
+      #filter-doc-errors:target ~ header .filter-pill[data-k='docs'],
+      #filter-docs:target ~ header .filter-pill[data-k='docs'] {
+          box-shadow: 0 0 0 var(--active-ring) currentColor;
+          border-color: currentColor;
+      }
+
+      /* Hidden targets for filtering */
+      #filter-all,
+      #filter-errors,
+      #filter-infos,
+      #filter-story-errors,
+      #filter-doc-errors,
+      #filter-docs {
+          display: none;
+      }
+
+      main {
+          padding: 36px 0 40px;
+      }
+
+      .grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
+      }
+
+      /* one card per row */
+
+      .card {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          border-radius: 14px;
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+      }
+
+      .head {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+      }
+
+      .title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+      }
+
+      .title h2 {
+          font-size: 16px;
+          margin: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .meta {
+          font-size: 12px;
+          color: var(--muted);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .kv {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+      }
+
+      .chip {
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: var(--chip);
+          border: 1px solid var(--border);
+      }
+
+      .hint {
+          color: var(--muted);
+          font-size: 12px;
+      }
+
+      .badges {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+      }
+
+      /* Per-card badges: labels become toggles when clickable */
+      .badge {
+          font-size: 12px;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--chip);
+          color: #d7dbe0;
+      }
+
+      .badge.ok {
+          color: #b9f6ca;
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+      }
+
+      .badge.info {
+          color: #b3d9ff;
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+      }
+
+      .badge.err {
+          color: #ff9aa0;
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+      }
+
+      .as-toggle {
+          cursor: pointer;
+      }
+
+      /* 1px ring on active toggle */
+      .tg-err:checked + label.as-toggle,
+      .tg-info:checked + label.as-toggle,
+      .tg-stories:checked + label.as-toggle,
+      .tg-docs:checked + label.as-toggle,
+      .tg-subcomponents:checked + label.as-toggle,
+      .tg-content:checked + label.as-toggle,
+      .tg-props:checked + label.as-toggle {
+          box-shadow: 0 0 0 var(--active-ring) currentColor;
+          border-color: currentColor;
+      }
+
+      /* Panels: hidden by default, shown when respective toggle checked */
+      .panels {
+          display: grid;
+          gap: 10px;
+      }
+
+      .panel {
+          display: none;
+      }
+
+      .tg-err:checked ~ .panels .panel-err {
+          display: grid;
+      }
+
+      .tg-info:checked ~ .panels .panel-info {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-stories:checked ~ .panels .panel-stories {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-docs:checked ~ .panels .panel-docs {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-subcomponents:checked ~ .panels .panel-subcomponents {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-content:checked ~ .panels .panel-content {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-props:checked ~ .panels .panel-props {
+          display: grid;
+      }
+
+      /* Colored notes for prop type error + info */
+      .note {
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+      }
+
+      .note.err {
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+          background: var(--err-bg);
+          color: #ffd1d4;
+      }
+
+      .note.info {
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+          background: var(--info-bg);
+          color: #d6e8ff;
+      }
+
+      .note.ok {
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+          background: var(--ok-bg);
+          color: var(--fg);
+      }
+
+      .note-title {
+          font-weight: 600;
+          margin-bottom: 6px;
+      }
+
+      .note-body {
+          white-space: normal;
+      }
+
+      /* Story error cards */
+      .ex {
+          padding: 10px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          background: #0f131b;
+      }
+
+      .ex.err {
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+      }
+
+      .row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+      }
+
+      .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+      }
+
+      .dot-ok {
+          background: var(--ok);
+      }
+
+      .dot-err {
+          background: var(--err);
+      }
+
+      .ex-name {
+          font-weight: 600;
+      }
+
+      /* Error groups (visible in errors filter) */
+      .error-groups {
+          display: none;
+          margin-bottom: 16px;
+      }
+
+      .group {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          border-radius: 14px;
+          overflow: hidden;
+      }
+
+      .group + .group {
+          margin-top: 12px;
+      }
+
+      .group-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          cursor: pointer;
+          border-bottom: 1px solid var(--border);
+      }
+
+      .group-header:hover {
+          background: #141722;
+      }
+
+      .group-title {
+          font-weight: 600;
+          flex: 1;
+      }
+
+      .group-count {
+          font-size: 12px;
+          color: var(--muted);
+      }
+
+      .group-cards {
+          display: none;
+          padding: 12px;
+      }
+
+      .group .card {
+          margin: 12px 0;
+      }
+
+      .group .card:first-child {
+          margin-top: 0;
+      }
+
+      .group .card:last-child {
+          margin-bottom: 0;
+      }
+
+      /* caret rotation */
+      .group-tg:checked + label .caret {
+          transform: rotate(90deg);
+      }
+
+      .caret {
+          transition: transform 0.15s ease;
+      }
+
+      /* toggle body */
+      .group-tg:checked ~ .group-cards {
+          display: block;
+      }
+
+      /* CSS-only filtering of cards via top pills */
+      #filter-errors:target ~ main .card:not(.has-error):not(.has-story-error) {
+          display: none;
+      }
+
+      #filter-infos:target ~ main .card:not(.has-info) {
+          display: none;
+      }
+
+      #filter-story-errors:target ~ main .card:not(.has-story-error) {
+          display: none;
+      }
+
+      #filter-doc-errors:target ~ main .card:not(.has-doc-error) {
+          display: none;
+      }
+
+      #filter-docs:target ~ main .card:has(> .tg-docs),
+      #filter-docs:target ~ main .card.is-doc {
+          display: block;
+      }
+
+      #filter-docs:target ~ main .card:not(:has(> .tg-docs)):not(.is-doc) {
+          display: none;
+      }
+
+      #filter-all:target ~ main .card {
+          display: block;
+      }
+
+      /* In errors view, hide standalone component-error cards in the regular grid (they will appear in groups) */
+      #filter-errors:target ~ main .grid .card.has-error {
+          display: none;
+      }
+
+      /* Show grouped section only in errors view */
+      #filter-errors:target ~ main .error-groups {
+          display: block;
+      }
+
+      /* Section titles */
+      .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--muted);
+          margin: 24px 0 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid var(--border);
+      }
+      .section-title:first-child {
+          margin-top: 0;
+      }
+
+      /* When a toggle is checked, show the corresponding panel */
+      .card > .tg-err:checked ~ .panels .panel-err {
+          display: grid;
+      }
+      
+      .card > .tg-info:checked ~ .panels .panel-info {
+          display: grid;
+      }
+      
+      .card > .tg-stories:checked ~ .panels .panel-stories {
+          display: grid;
+      }
+
+      .card > .tg-docs:checked ~ .panels .panel-docs {
+          display: grid;
+      }
+
+      .card > .tg-subcomponents:checked ~ .panels .panel-subcomponents {
+          display: grid;
+      }
+
+      .card > .tg-content:checked ~ .panels .panel-content {
+          display: grid;
+      }
+
+      /* Add vertical spacing around panels only when any panel is visible */
+      .card > .tg-err:checked ~ .panels,
+      .card > .tg-info:checked ~ .panels,
+      .card > .tg-stories:checked ~ .panels,
+      .card > .tg-docs:checked ~ .panels,
+      .card > .tg-subcomponents:checked ~ .panels,
+      .card > .tg-content:checked ~ .panels,
+      .card > .tg-props:checked ~ .panels {
+          margin: 10px 0;
+      }
+
+      /* Optional: a subtle 1px ring on the active badge, using :has() if available */
+      @supports selector(.card:has(.tg-err:checked)) {
+          .card:has(.tg-err:checked) label[for$='-err'],
+          .card:has(.tg-info:checked) label[for$='-info'],
+          .card:has(.tg-stories:checked) label[for$='-stories'],
+          .card:has(.tg-docs:checked) label[for$='-docs'],
+          .card:has(.tg-subcomponents:checked) label[for$='-subcomponents'],
+          .card:has(.tg-content:checked) label[for$='-content'],
+          .card:has(.tg-props:checked) label[for$='-props'] {
+              box-shadow: 0 0 0 1px currentColor;
+              border-color: currentColor;
+          }
+      }
+
+      /* Wrap long lines in code blocks at ~120 characters */
+      pre, code {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      }
+      pre {
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          overflow-x: auto; /* fallback for extremely long tokens */
+          margin: 8px 0 0;
+      }
+      pre > code {
+          display: block;
+          white-space: inherit;
+          overflow-wrap: inherit;
+          word-break: inherit;
+          inline-size: min(100%, 120ch);
+      }
+
+      /* MDX content container for docs */
+      .mdx-content {
+          background: #0f131b;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 12px;
+          max-height: 400px;
+          overflow-y: auto;
+          margin-top: 8px;
+      }
+  </style>
+</head>
+<body>
+<!-- Hidden targets for the top-level filters -->
+<span id="filter-all"></span>
+<span id="filter-errors"></span>
+<span id="filter-infos"></span>
+<span id="filter-story-errors"></span>
+<span id="filter-doc-errors"></span>
+<span id="filter-docs"></span>
+<header>
+  <div class="wrap">
+    <h1>Manifest Debugger</h1>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><a class="filter-pill err" data-k="errors" href="#filter-errors">1/7 prop type error</a><a class="filter-pill info" data-k="infos" href="#filter-infos">4/7 infos</a><a class="filter-pill err" data-k="story-errors" href="#filter-story-errors">5/28 story errors</a></div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="note info" style="margin-bottom: 16px;">
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>1.4s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <pre><code>typescript: {
+  reactDocgen: 'react-docgen-typescript',
+}</code></pre>
+            Note: <code>react-docgen-typescript</code> can be slower. If performance is acceptable for your project, it generally produces better results.
+            <a href="https://storybook.js.org/docs/api/main-config/main-config-typescript#reactdocgen" target="_blank">Learn more</a>
+          </div>
+    <h2 class="section-title">Components</h2>
+    <div class="grid" role="list">
+      
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="ActLogo">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> ActLogo</h2>
+      <div class="badges">
+        <label for="c-0-foundations-brand-props" class="badge ok as-toggle">4 prop types</label>
+        
+        <label for="c-0-foundations-brand-stories" class="badge ok as-toggle">4 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/Brand.stories.tsx">foundations-brand · ./src/stories/Brand.stories.tsx</div>
+    
+    <div class="hint">The Act wordmark - the real act.security logo (single-color, #F94351), vectorised from the brand SVG (viewBox 0 0 78 36). `size` sets the height; width scales to the wordmark&#39;s natural aspect ratio. `color` flows to the fill so it can adapt per theme (coral on light, can invert on dark tiles).</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-0-foundations-brand-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-0-foundations-brand-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">4 prop types</span>
+            </div>
+            <pre><code>Component: src/components/Brand.tsx::ActLogo</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>color?: string = &#39;var(--brand-red)&#39;
+
+size?: number = 26
+
+style?: CSSProperties
+
+/**
+ * @deprecated the real wordmark has no separate dot
+ */
+withDot?: boolean</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { ActLogo, ConstructionArt, SpotIllustration } from "prototype";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Logo</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Logo = () =&gt; &lt;ActLogo size={40} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Logo On Brand Tiles</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const LogoOnBrandTiles = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 20, alignItems: &#39;center&#39;, flexWrap: &#39;wrap&#39; }}&gt;
+    &lt;div style={{ width: 64, height: 64, borderRadius: 16, background: &#39;var(--brand-red)&#39;, display: &#39;grid&#39;, placeItems: &#39;center&#39; }}&gt;
+      &lt;ActLogo size={22} color=&quot;#FBFCEA&quot; /&gt;
+    &lt;/div&gt;
+    &lt;div style={{ width: 64, height: 64, borderRadius: 16, background: &#39;var(--accent)&#39;, display: &#39;grid&#39;, placeItems: &#39;center&#39; }}&gt;
+      &lt;ActLogo size={22} color=&quot;var(--accent-ink)&quot; /&gt;
+    &lt;/div&gt;
+    &lt;div style={{ width: 64, height: 64, borderRadius: 16, background: &#39;var(--surface-2)&#39;, border: &#39;1px solid var(--border)&#39;, display: &#39;grid&#39;, placeItems: &#39;center&#39; }}&gt;
+      &lt;ActLogo size={22} /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">State Illustrations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const StateIllustrations = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 28, alignItems: &#39;center&#39;, flexWrap: &#39;wrap&#39; }}&gt;
+    &lt;SpotIllustration variant=&quot;empty&quot; size={132} /&gt;
+    &lt;SpotIllustration variant=&quot;success&quot; size={132} /&gt;
+    &lt;SpotIllustration variant=&quot;error&quot; size={132} /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Construction Motif</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const ConstructionMotif = () =&gt; &lt;ConstructionArt style={{ width: 420 }} /&gt;;</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  has-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="ConnectPanel">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> ConnectPanel</h2>
+      <div class="badges">
+        <label for="c-1-components-connectpanel-props" class="badge ok as-toggle">7 prop types</label>
+        <label for="c-1-components-connectpanel-info" class="badge info as-toggle">1 info</label>
+        <label for="c-1-components-connectpanel-stories" class="badge err as-toggle">5/5 story errors</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/ConnectPanel.stories.tsx">components-connectpanel · ./src/stories/ConnectPanel.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-1-components-connectpanel-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-1-components-connectpanel-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-1-components-connectpanel-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">7 prop types</span>
+            </div>
+            <pre><code>Component: src/components/ConnectPanel.tsx::ConnectPanel</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * drawer breadcrumb trail (optional orientation aid)
+ */
+crumbs?: Crumb[]
+
+/**
+ * &quot;+ Add instance&quot; - run the full connect flow even though the integration is installed
+ */
+forceConnect?: boolean
+
+/**
+ * deep-link / deck: open the panel at a specific phase
+ */
+initialPhase?: &#39;overview&#39; | &#39;credentials&#39; | &#39;consent&#39; | &#39;connecting&#39; | &#39;success&#39; | &#39;error&#39;
+
+integration: Integration
+
+onClose: () =&gt; void
+
+/**
+ * Setup Copilot &quot;next best action&quot; - close this panel and open another integration
+ */
+onOpenIntegration?: (id: string) =&gt; void
+
+onStatusChange: (id: string, status: Status) =&gt; void</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+            <div class="note err">
+              <div class="row">
+                <span class="ex-name">Overview</span>
+                <span class="badge err">story error</span>
+              </div>
+              
+              
+              
+              <pre><code>Could not evaluate story expression
+  33 | export default meta
+  34 |
+&gt; 35 | export const Overview: StoryObj = wrap(aws, &#39;overview&#39;)
+     |                                   ^^^^^^^^^^^^^^^^^^^^^
+  36 | export const Credentials: StoryObj = wrap(aws, &#39;credentials&#39;)
+  37 | export const Consent: StoryObj = wrap(entra, &#39;consent&#39;)
+  38 | export const Success: StoryObj = wrap(okta, &#39;success&#39;)</code></pre>
+            </div>
+            <div class="note err">
+              <div class="row">
+                <span class="ex-name">Credentials</span>
+                <span class="badge err">story error</span>
+              </div>
+              
+              
+              
+              <pre><code>Could not evaluate story expression
+  34 |
+  35 | export const Overview: StoryObj = wrap(aws, &#39;overview&#39;)
+&gt; 36 | export const Credentials: StoryObj = wrap(aws, &#39;credentials&#39;)
+     |                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  37 | export const Consent: StoryObj = wrap(entra, &#39;consent&#39;)
+  38 | export const Success: StoryObj = wrap(okta, &#39;success&#39;)
+  39 | export const Error: StoryObj = wrap(aws, &#39;error&#39;)</code></pre>
+            </div>
+            <div class="note err">
+              <div class="row">
+                <span class="ex-name">Consent</span>
+                <span class="badge err">story error</span>
+              </div>
+              
+              
+              
+              <pre><code>Could not evaluate story expression
+  35 | export const Overview: StoryObj = wrap(aws, &#39;overview&#39;)
+  36 | export const Credentials: StoryObj = wrap(aws, &#39;credentials&#39;)
+&gt; 37 | export const Consent: StoryObj = wrap(entra, &#39;consent&#39;)
+     |                                  ^^^^^^^^^^^^^^^^^^^^^^
+  38 | export const Success: StoryObj = wrap(okta, &#39;success&#39;)
+  39 | export const Error: StoryObj = wrap(aws, &#39;error&#39;)
+  40 |</code></pre>
+            </div>
+            <div class="note err">
+              <div class="row">
+                <span class="ex-name">Success</span>
+                <span class="badge err">story error</span>
+              </div>
+              
+              
+              
+              <pre><code>Could not evaluate story expression
+  36 | export const Credentials: StoryObj = wrap(aws, &#39;credentials&#39;)
+  37 | export const Consent: StoryObj = wrap(entra, &#39;consent&#39;)
+&gt; 38 | export const Success: StoryObj = wrap(okta, &#39;success&#39;)
+     |                                  ^^^^^^^^^^^^^^^^^^^^^
+  39 | export const Error: StoryObj = wrap(aws, &#39;error&#39;)
+  40 |</code></pre>
+            </div>
+            <div class="note err">
+              <div class="row">
+                <span class="ex-name">Error</span>
+                <span class="badge err">story error</span>
+              </div>
+              
+              
+              
+              <pre><code>Could not evaluate story expression
+  37 | export const Consent: StoryObj = wrap(entra, &#39;consent&#39;)
+  38 | export const Success: StoryObj = wrap(okta, &#39;success&#39;)
+&gt; 39 | export const Error: StoryObj = wrap(aws, &#39;error&#39;)
+     |                                ^^^^^^^^^^^^^^^^^^
+  40 |</code></pre>
+            </div>
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { ConnectPanel } from "prototype";</code></pre>
+              </div>
+          
+          
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="CopilotTip">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> CopilotTip</h2>
+      <div class="badges">
+        <label for="c-2-components-setup-copilot-props" class="badge ok as-toggle">2 prop types</label>
+        
+        <label for="c-2-components-setup-copilot-stories" class="badge ok as-toggle">4 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/Copilot.stories.tsx">components-setup-copilot · ./src/stories/Copilot.stories.tsx</div>
+    
+    <div class="hint">Small contextual assistant callout used inside the connect flow. Recommends / explains - never acts on the user&#39;s behalf.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-2-components-setup-copilot-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-2-components-setup-copilot-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: src/components/Copilot.tsx::CopilotTip</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: React.ReactNode
+
+label?: string = &#39;Setup Copilot&#39;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { CopilotInsight, CopilotMark, CopilotTip, SetupCopilotPanel } from "prototype";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Mark</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Mark = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 16, alignItems: &#39;center&#39; }}&gt;
+    &lt;CopilotMark size={22} /&gt;
+    &lt;CopilotMark size={26} /&gt;
+    &lt;CopilotMark size={32} /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Tip</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Tip = () =&gt; &lt;CopilotTip&gt;Connect AWS first - it gives Act the access graph everything else maps onto.&lt;/CopilotTip&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Insight</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Insight = () =&gt; (
+  &lt;div style={{ maxWidth: 360 }}&gt;
+    &lt;CopilotInsight text=&quot;Pairs with Okta to map cloud access back to real identities.&quot; /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Recommendation Panel</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const RecommendationPanel = () =&gt; (
+  &lt;div style={{ maxWidth: 720 }}&gt;
+    &lt;SetupCopilotPanel items={INTEGRATIONS} onOpen={() =&gt; {}} /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="IntegrationCard">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> IntegrationCard</h2>
+      <div class="badges">
+        <label for="c-3-components-integrationcard-props" class="badge ok as-toggle">3 prop types</label>
+        <label for="c-3-components-integrationcard-info" class="badge info as-toggle">1 info</label>
+        <label for="c-3-components-integrationcard-stories" class="badge ok as-toggle">4 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/IntegrationCard.stories.tsx">components-integrationcard · ./src/stories/IntegrationCard.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-3-components-integrationcard-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-3-components-integrationcard-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-3-components-integrationcard-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">3 prop types</span>
+            </div>
+            <pre><code>Component: src/components/IntegrationCard.tsx::IntegrationCard</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * the integration whose panel is currently open - gets a persistent brand ring
+ */
+active?: boolean = false
+
+integration: Integration
+
+onOpen: (i: Integration) =&gt; void</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { IntegrationCard } from "prototype";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Recommended</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Recommended = () =&gt; &lt;IntegrationCard
+    onOpen={() =&gt; {}}
+    integration={withStatus(&#39;not_connected&#39;, { recommended: true })} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Selected</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Selected = () =&gt; &lt;IntegrationCard onOpen={() =&gt; {}} integration={withStatus(&#39;connected&#39;)} active /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">All States</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const AllStates = () =&gt; (
+  &lt;div style={{ display: &#39;grid&#39;, gridTemplateColumns: &#39;repeat(auto-fill, minmax(300px, 1fr))&#39;, gap: 16 }}&gt;
+    {ALL.map((s) =&gt; (
+      &lt;IntegrationCard key={s} integration={withStatus(s)} onOpen={() =&gt; {}} /&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Hover Vs Selected</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const HoverVsSelected = () =&gt; (
+  &lt;div style={{ display: &#39;grid&#39;, gridTemplateColumns: &#39;repeat(auto-fill, minmax(300px, 1fr))&#39;, gap: 16 }}&gt;
+    &lt;div&gt;
+      &lt;p style={{ fontSize: 12, color: &#39;var(--text-3)&#39;, marginBottom: 8 }}&gt;Default (hover me)&lt;/p&gt;
+      &lt;IntegrationCard integration={withStatus(&#39;not_connected&#39;, { recommended: true })} onOpen={() =&gt; {}} /&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;p style={{ fontSize: 12, color: &#39;var(--text-3)&#39;, marginBottom: 8 }}&gt;Selected (panel open)&lt;/p&gt;
+      &lt;IntegrationCard integration={withStatus(&#39;connected&#39;)} onOpen={() =&gt; {}} active /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="LogoTile">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> LogoTile</h2>
+      <div class="badges">
+        <label for="c-4-foundations-logotile-props" class="badge ok as-toggle">4 prop types</label>
+        
+        <label for="c-4-foundations-logotile-stories" class="badge ok as-toggle">3 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/LogoTile.stories.tsx">foundations-logotile · ./src/stories/LogoTile.stories.tsx</div>
+    
+    <div class="hint">A vendor logo on a neutral white chip - the standard, brand-compliant way to present third-party logos (every brand permits its mark on white, and it keeps dark logos like Splunk/GitHub legible on a dark app theme). Logos always paint in their authentic brand colour; no recolouring. Resolution order: an official asset in LOGO_IMAGES → the inline brand glyph → a monogram. The whole set lives in one file, brandLogos.tsx, so swapping in a real logo is a single-line change.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-4-foundations-logotile-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-4-foundations-logotile-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">4 prop types</span>
+            </div>
+            <pre><code>Component: src/components/LogoTile.tsx::LogoTile</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * the vendor&#39;s authentic brand colour - the glyph always renders in it
+ */
+color: string
+
+/**
+ * integration id - keys into the SVG logo set; falls back to the monogram
+ */
+id?: string
+
+mono: string
+
+size?: number = 44</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { LogoTile } from "prototype";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Playground</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Playground = () =&gt; &lt;LogoTile mono=&quot;AW&quot; color=&quot;#FF9900&quot; size={44} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Gallery</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Gallery = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 14, flexWrap: &#39;wrap&#39; }}&gt;
+    {SAMPLES.map((s) =&gt; (
+      &lt;LogoTile key={s.mono} mono={s.mono} color={s.color} /&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Sizes</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Sizes = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 14, alignItems: &#39;center&#39; }}&gt;
+    {[28, 36, 44, 56, 72].map((sz) =&gt; (
+      &lt;LogoTile key={sz} mono=&quot;AW&quot; color=&quot;#FF9900&quot; size={sz} /&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="StatusBadge">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> StatusBadge</h2>
+      <div class="badges">
+        <label for="c-5-status-statusbadge-props" class="badge ok as-toggle">1 prop type</label>
+        <label for="c-5-status-statusbadge-info" class="badge info as-toggle">1 info</label>
+        <label for="c-5-status-statusbadge-stories" class="badge ok as-toggle">3 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/StatusBadge.stories.tsx">status-statusbadge · ./src/stories/StatusBadge.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-5-status-statusbadge-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-5-status-statusbadge-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-5-status-statusbadge-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">1 prop type</span>
+            </div>
+            <pre><code>Component: src/components/StatusBadge.tsx::StatusBadge</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>status: | &#39;not_connected&#39;
+| &#39;connecting&#39;
+| &#39;syncing&#39;
+| &#39;connected&#39;
+| &#39;degraded&#39;
+| &#39;needs_attention&#39;
+| &#39;error&#39;
+| &#39;disabled&#39;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { StatusBadge, StatusDot } from "prototype";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Playground</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Playground = () =&gt; &lt;StatusBadge status=&quot;connected&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">All Badges</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const AllBadges = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 12 }}&gt;
+    {ALL.map((s) =&gt; (
+      &lt;div key={s} style={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 14 }}&gt;
+        &lt;StatusBadge status={s} /&gt;
+        &lt;code style={{ fontSize: 12, color: &#39;var(--text-3)&#39; }}&gt;{s}&lt;/code&gt;
+      &lt;/div&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Dots</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Dots = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 20, alignItems: &#39;center&#39;, flexWrap: &#39;wrap&#39; }}&gt;
+    {ALL.map((s) =&gt; (
+      &lt;div key={s} style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, alignItems: &#39;center&#39;, gap: 8 }}&gt;
+        &lt;StatusDot status={s} size={12} /&gt;
+        &lt;code style={{ fontSize: 10, color: &#39;var(--text-3)&#39; }}&gt;{s}&lt;/code&gt;
+      &lt;/div&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  has-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Tokens">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> Tokens</h2>
+      <div class="badges">
+        <label for="c-6-foundations-tokens-err" class="badge err as-toggle">prop type error</label>
+        <label for="c-6-foundations-tokens-info" class="badge info as-toggle">1 info</label>
+        <label for="c-6-foundations-tokens-stories" class="badge ok as-toggle">5 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/Foundations.stories.tsx">foundations-tokens · ./src/stories/Foundations.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  <input id="c-6-foundations-tokens-err" class="tg tg-err" type="checkbox" hidden />
+  <input id="c-6-foundations-tokens-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-6-foundations-tokens-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  
+
+  <div class="panels">
+    
+        <div class="panel panel-err">
+          
+    <div class="note err">
+      <div class="note-title">Prop type error</div>
+      <div class="note-body"><pre><code>We could not detect the component from your story file. Specify meta.component.
+  2 | import { Sparkles } from &#39;lucide-react&#39;
+  3 |
+&gt; 4 | const meta = {
+    | ^
+  5 |   title: &#39;Foundations/Tokens&#39;,
+  6 |   parameters: { layout: &#39;padded&#39; },
+  7 | } satisfies Meta
+
+./src/stories/Foundations.stories.tsx:
+import type { Meta, StoryObj } from &#39;@storybook/react-vite&#39;
+import { Sparkles } from &#39;lucide-react&#39;
+
+const meta = {
+  title: &#39;Foundations/Tokens&#39;,
+  parameters: { layout: &#39;padded&#39; },
+} satisfies Meta
+
+export default meta
+type Story = StoryObj
+
+export const Buttons: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+      &lt;button className=&quot;btn btn-primary&quot;&gt;Primary&lt;/button&gt;
+      &lt;button className=&quot;btn btn-brand&quot;&gt;
+        &lt;Sparkles size={14} /&gt; Brand
+      &lt;/button&gt;
+      &lt;button className=&quot;btn btn-ghost&quot;&gt;Ghost&lt;/button&gt;
+      &lt;button className=&quot;btn btn-danger&quot;&gt;Danger&lt;/button&gt;
+    &lt;/div&gt;
+  ),
+}
+
+export const Chips: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+      &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--accent)&#39;, color: &#39;var(--accent-ink)&#39;, border: &#39;1px solid transparent&#39; }}&gt;
+        &lt;Sparkles size={12} /&gt; Recommended
+      &lt;/span&gt;
+      &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--surface-3)&#39;, color: &#39;var(--text-3)&#39;, border: &#39;1px solid var(--border)&#39; }}&gt;
+        Neutral
+      &lt;/span&gt;
+      &lt;span className=&quot;chip&quot; style={{ background: &#39;color-mix(in srgb, var(--ok) 14%, transparent)&#39;, color: &#39;var(--ok)&#39;, border: &#39;1px solid color-mix(in srgb, var(--ok) 28%, transparent)&#39; }}&gt;
+        Connected
+      &lt;/span&gt;
+    &lt;/div&gt;
+  ),
+}
+
+export const Fields: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 12, maxWidth: 320 }}&gt;
+      &lt;input className=&quot;field&quot; placeholder=&quot;Search integrations…&quot; /&gt;
+      &lt;input className=&quot;field&quot; defaultValue=&quot;us-east-1&quot; /&gt;
+    &lt;/div&gt;
+  ),
+}
+
+export const Typography: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 10 }}&gt;
+      &lt;h1 style={{ margin: 0 }}&gt;Heading 1 - Grold display&lt;/h1&gt;
+      &lt;h2 style={{ margin: 0 }}&gt;Heading 2 - Grold display&lt;/h2&gt;
+      &lt;h3 style={{ margin: 0 }}&gt;Heading 3 - Grold display&lt;/h3&gt;
+      &lt;p style={{ margin: 0, color: &#39;var(--text-2)&#39;, maxWidth: 520 }}&gt;
+        Body copy stays in Inter for readability. Act pairs the geometric rounded
+        Grold display face on headings with a neutral grotesque for body text.
+      &lt;/p&gt;
+      &lt;code className=&quot;mono&quot; style={{ color: &#39;var(--text-3)&#39; }}&gt;mono · v2.1.0 · us-east-1&lt;/code&gt;
+    &lt;/div&gt;
+  ),
+}
+
+const TOKENS = [
+  &#39;--bg&#39;,
+  &#39;--surface-1&#39;,
+  &#39;--surface-2&#39;,
+  &#39;--surface-3&#39;,
+  &#39;--border&#39;,
+  &#39;--text-1&#39;,
+  &#39;--text-2&#39;,
+  &#39;--text-3&#39;,
+  &#39;--brand-red&#39;,
+  &#39;--accent&#39;,
+  &#39;--accent-ink&#39;,
+  &#39;--accent-soft&#39;,
+  &#39;--ok&#39;,
+  &#39;--warn&#39;,
+  &#39;--danger&#39;,
+  &#39;--info&#39;,
+  &#39;--degraded&#39;,
+  &#39;--ring&#39;,
+]
+
+export const ColorTokens: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;grid&#39;, gridTemplateColumns: &#39;repeat(auto-fill, minmax(150px, 1fr))&#39;, gap: 12 }}&gt;
+      {TOKENS.map((t) =&gt; (
+        &lt;div key={t} style={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 10 }}&gt;
+          &lt;span
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 9,
+              background: `var(${t})`,
+              border: &#39;1px solid var(--border)&#39;,
+              flexShrink: 0,
+            }}
+          /&gt;
+          &lt;code style={{ fontSize: 11, color: &#39;var(--text-2)&#39; }}&gt;{t}&lt;/code&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  ),
+}
+</code></pre></div>
+    </div>
+        </div>
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Sparkles } from "lucide-react";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Buttons</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Buttons = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+    &lt;button className=&quot;btn btn-primary&quot;&gt;Primary&lt;/button&gt;
+    &lt;button className=&quot;btn btn-brand&quot;&gt;
+      &lt;Sparkles size={14} /&gt; Brand
+    &lt;/button&gt;
+    &lt;button className=&quot;btn btn-ghost&quot;&gt;Ghost&lt;/button&gt;
+    &lt;button className=&quot;btn btn-danger&quot;&gt;Danger&lt;/button&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Chips</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Chips = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+    &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--accent)&#39;, color: &#39;var(--accent-ink)&#39;, border: &#39;1px solid transparent&#39; }}&gt;
+      &lt;Sparkles size={12} /&gt; Recommended
+    &lt;/span&gt;
+    &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--surface-3)&#39;, color: &#39;var(--text-3)&#39;, border: &#39;1px solid var(--border)&#39; }}&gt;
+      Neutral
+    &lt;/span&gt;
+    &lt;span className=&quot;chip&quot; style={{ background: &#39;color-mix(in srgb, var(--ok) 14%, transparent)&#39;, color: &#39;var(--ok)&#39;, border: &#39;1px solid color-mix(in srgb, var(--ok) 28%, transparent)&#39; }}&gt;
+      Connected
+    &lt;/span&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Fields</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Fields = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 12, maxWidth: 320 }}&gt;
+    &lt;input className=&quot;field&quot; placeholder=&quot;Search integrations…&quot; /&gt;
+    &lt;input className=&quot;field&quot; defaultValue=&quot;us-east-1&quot; /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Typography</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Typography = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 10 }}&gt;
+    &lt;h1 style={{ margin: 0 }}&gt;Heading 1 - Grold display&lt;/h1&gt;
+    &lt;h2 style={{ margin: 0 }}&gt;Heading 2 - Grold display&lt;/h2&gt;
+    &lt;h3 style={{ margin: 0 }}&gt;Heading 3 - Grold display&lt;/h3&gt;
+    &lt;p style={{ margin: 0, color: &#39;var(--text-2)&#39;, maxWidth: 520 }}&gt;
+      Body copy stays in Inter for readability. Act pairs the geometric rounded
+      Grold display face on headings with a neutral grotesque for body text.
+    &lt;/p&gt;
+    &lt;code className=&quot;mono&quot; style={{ color: &#39;var(--text-3)&#39; }}&gt;mono · v2.1.0 · us-east-1&lt;/code&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Color Tokens</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const ColorTokens = () =&gt; (
+  &lt;div style={{ display: &#39;grid&#39;, gridTemplateColumns: &#39;repeat(auto-fill, minmax(150px, 1fr))&#39;, gap: 12 }}&gt;
+    {TOKENS.map((t) =&gt; (
+      &lt;div key={t} style={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 10 }}&gt;
+        &lt;span
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            background: `var(${t})`,
+            border: &#39;1px solid var(--border)&#39;,
+            flexShrink: 0,
+          }}
+        /&gt;
+        &lt;code style={{ fontSize: 11, color: &#39;var(--text-2)&#39; }}&gt;{t}&lt;/code&gt;
+      &lt;/div&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+    </div>
+    <div class="error-groups" role="region" aria-label="Prop type error groups">
+        <section class="group">
+          <input id="no-component-found-toggle" class="group-tg" type="checkbox" hidden />
+          <label for="no-component-found-toggle" class="group-header">
+            <span class="caret">▸</span>
+            <span class="group-title">No component found</span>
+            <span class="group-count">1</span>
+          </label>
+          <div class="group-cards">
+<article
+  class="card 
+  has-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Tokens">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-err"></span> Tokens</h2>
+      <div class="badges">
+        <label for="c-error-0-foundations-tokens-err" class="badge err as-toggle">prop type error</label>
+        <label for="c-error-0-foundations-tokens-info" class="badge info as-toggle">1 info</label>
+        <label for="c-error-0-foundations-tokens-stories" class="badge ok as-toggle">5 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/stories/Foundations.stories.tsx">foundations-tokens · ./src/stories/Foundations.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  <input id="c-error-0-foundations-tokens-err" class="tg tg-err" type="checkbox" hidden />
+  <input id="c-error-0-foundations-tokens-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-error-0-foundations-tokens-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  
+
+  <div class="panels">
+    
+        <div class="panel panel-err">
+          
+    <div class="note err">
+      <div class="note-title">Prop type error</div>
+      <div class="note-body"><pre><code>We could not detect the component from your story file. Specify meta.component.
+  2 | import { Sparkles } from &#39;lucide-react&#39;
+  3 |
+&gt; 4 | const meta = {
+    | ^
+  5 |   title: &#39;Foundations/Tokens&#39;,
+  6 |   parameters: { layout: &#39;padded&#39; },
+  7 | } satisfies Meta
+
+./src/stories/Foundations.stories.tsx:
+import type { Meta, StoryObj } from &#39;@storybook/react-vite&#39;
+import { Sparkles } from &#39;lucide-react&#39;
+
+const meta = {
+  title: &#39;Foundations/Tokens&#39;,
+  parameters: { layout: &#39;padded&#39; },
+} satisfies Meta
+
+export default meta
+type Story = StoryObj
+
+export const Buttons: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+      &lt;button className=&quot;btn btn-primary&quot;&gt;Primary&lt;/button&gt;
+      &lt;button className=&quot;btn btn-brand&quot;&gt;
+        &lt;Sparkles size={14} /&gt; Brand
+      &lt;/button&gt;
+      &lt;button className=&quot;btn btn-ghost&quot;&gt;Ghost&lt;/button&gt;
+      &lt;button className=&quot;btn btn-danger&quot;&gt;Danger&lt;/button&gt;
+    &lt;/div&gt;
+  ),
+}
+
+export const Chips: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+      &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--accent)&#39;, color: &#39;var(--accent-ink)&#39;, border: &#39;1px solid transparent&#39; }}&gt;
+        &lt;Sparkles size={12} /&gt; Recommended
+      &lt;/span&gt;
+      &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--surface-3)&#39;, color: &#39;var(--text-3)&#39;, border: &#39;1px solid var(--border)&#39; }}&gt;
+        Neutral
+      &lt;/span&gt;
+      &lt;span className=&quot;chip&quot; style={{ background: &#39;color-mix(in srgb, var(--ok) 14%, transparent)&#39;, color: &#39;var(--ok)&#39;, border: &#39;1px solid color-mix(in srgb, var(--ok) 28%, transparent)&#39; }}&gt;
+        Connected
+      &lt;/span&gt;
+    &lt;/div&gt;
+  ),
+}
+
+export const Fields: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 12, maxWidth: 320 }}&gt;
+      &lt;input className=&quot;field&quot; placeholder=&quot;Search integrations…&quot; /&gt;
+      &lt;input className=&quot;field&quot; defaultValue=&quot;us-east-1&quot; /&gt;
+    &lt;/div&gt;
+  ),
+}
+
+export const Typography: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 10 }}&gt;
+      &lt;h1 style={{ margin: 0 }}&gt;Heading 1 - Grold display&lt;/h1&gt;
+      &lt;h2 style={{ margin: 0 }}&gt;Heading 2 - Grold display&lt;/h2&gt;
+      &lt;h3 style={{ margin: 0 }}&gt;Heading 3 - Grold display&lt;/h3&gt;
+      &lt;p style={{ margin: 0, color: &#39;var(--text-2)&#39;, maxWidth: 520 }}&gt;
+        Body copy stays in Inter for readability. Act pairs the geometric rounded
+        Grold display face on headings with a neutral grotesque for body text.
+      &lt;/p&gt;
+      &lt;code className=&quot;mono&quot; style={{ color: &#39;var(--text-3)&#39; }}&gt;mono · v2.1.0 · us-east-1&lt;/code&gt;
+    &lt;/div&gt;
+  ),
+}
+
+const TOKENS = [
+  &#39;--bg&#39;,
+  &#39;--surface-1&#39;,
+  &#39;--surface-2&#39;,
+  &#39;--surface-3&#39;,
+  &#39;--border&#39;,
+  &#39;--text-1&#39;,
+  &#39;--text-2&#39;,
+  &#39;--text-3&#39;,
+  &#39;--brand-red&#39;,
+  &#39;--accent&#39;,
+  &#39;--accent-ink&#39;,
+  &#39;--accent-soft&#39;,
+  &#39;--ok&#39;,
+  &#39;--warn&#39;,
+  &#39;--danger&#39;,
+  &#39;--info&#39;,
+  &#39;--degraded&#39;,
+  &#39;--ring&#39;,
+]
+
+export const ColorTokens: Story = {
+  render: () =&gt; (
+    &lt;div style={{ display: &#39;grid&#39;, gridTemplateColumns: &#39;repeat(auto-fill, minmax(150px, 1fr))&#39;, gap: 12 }}&gt;
+      {TOKENS.map((t) =&gt; (
+        &lt;div key={t} style={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 10 }}&gt;
+          &lt;span
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 9,
+              background: `var(${t})`,
+              border: &#39;1px solid var(--border)&#39;,
+              flexShrink: 0,
+            }}
+          /&gt;
+          &lt;code style={{ fontSize: 11, color: &#39;var(--text-2)&#39; }}&gt;{t}&lt;/code&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  ),
+}
+</code></pre></div>
+    </div>
+        </div>
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Sparkles } from "lucide-react";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Buttons</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Buttons = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+    &lt;button className=&quot;btn btn-primary&quot;&gt;Primary&lt;/button&gt;
+    &lt;button className=&quot;btn btn-brand&quot;&gt;
+      &lt;Sparkles size={14} /&gt; Brand
+    &lt;/button&gt;
+    &lt;button className=&quot;btn btn-ghost&quot;&gt;Ghost&lt;/button&gt;
+    &lt;button className=&quot;btn btn-danger&quot;&gt;Danger&lt;/button&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Chips</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Chips = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, gap: 12, flexWrap: &#39;wrap&#39;, alignItems: &#39;center&#39; }}&gt;
+    &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--accent)&#39;, color: &#39;var(--accent-ink)&#39;, border: &#39;1px solid transparent&#39; }}&gt;
+      &lt;Sparkles size={12} /&gt; Recommended
+    &lt;/span&gt;
+    &lt;span className=&quot;chip&quot; style={{ background: &#39;var(--surface-3)&#39;, color: &#39;var(--text-3)&#39;, border: &#39;1px solid var(--border)&#39; }}&gt;
+      Neutral
+    &lt;/span&gt;
+    &lt;span className=&quot;chip&quot; style={{ background: &#39;color-mix(in srgb, var(--ok) 14%, transparent)&#39;, color: &#39;var(--ok)&#39;, border: &#39;1px solid color-mix(in srgb, var(--ok) 28%, transparent)&#39; }}&gt;
+      Connected
+    &lt;/span&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Fields</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Fields = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 12, maxWidth: 320 }}&gt;
+    &lt;input className=&quot;field&quot; placeholder=&quot;Search integrations…&quot; /&gt;
+    &lt;input className=&quot;field&quot; defaultValue=&quot;us-east-1&quot; /&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Typography</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Typography = () =&gt; (
+  &lt;div style={{ display: &#39;flex&#39;, flexDirection: &#39;column&#39;, gap: 10 }}&gt;
+    &lt;h1 style={{ margin: 0 }}&gt;Heading 1 - Grold display&lt;/h1&gt;
+    &lt;h2 style={{ margin: 0 }}&gt;Heading 2 - Grold display&lt;/h2&gt;
+    &lt;h3 style={{ margin: 0 }}&gt;Heading 3 - Grold display&lt;/h3&gt;
+    &lt;p style={{ margin: 0, color: &#39;var(--text-2)&#39;, maxWidth: 520 }}&gt;
+      Body copy stays in Inter for readability. Act pairs the geometric rounded
+      Grold display face on headings with a neutral grotesque for body text.
+    &lt;/p&gt;
+    &lt;code className=&quot;mono&quot; style={{ color: &#39;var(--text-3)&#39; }}&gt;mono · v2.1.0 · us-east-1&lt;/code&gt;
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Color Tokens</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const ColorTokens = () =&gt; (
+  &lt;div style={{ display: &#39;grid&#39;, gridTemplateColumns: &#39;repeat(auto-fill, minmax(150px, 1fr))&#39;, gap: 12 }}&gt;
+    {TOKENS.map((t) =&gt; (
+      &lt;div key={t} style={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 10 }}&gt;
+        &lt;span
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            background: `var(${t})`,
+            border: &#39;1px solid var(--border)&#39;,
+            flexShrink: 0,
+          }}
+        /&gt;
+        &lt;code style={{ fontSize: 11, color: &#39;var(--text-2)&#39; }}&gt;{t}&lt;/code&gt;
+      &lt;/div&gt;
+    ))}
+  &lt;/div&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article></div>
+        </section>
+      </div>
+    
+    
+  </div>
+</main>
+</body>
+</html>  
