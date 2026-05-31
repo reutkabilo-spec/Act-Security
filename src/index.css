@@ -1,0 +1,456 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap');
+
+/* ============================================================
+   Grold - Act's geometric rounded display face (headings only).
+   Served from Act's own Webflow CDN; Poppins is the closest
+   geometric-rounded fallback, then the SaaS body sans (Inter).
+   ============================================================ */
+@font-face {
+  font-family: 'Grold';
+  src: url('https://cdn.prod.website-files.com/690ae8b659b954f653a870a7/690b0702caf86db17255b9ae_Grold-Bold.otf')
+    format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Grold';
+  src: url('https://cdn.prod.website-files.com/690ae8b659b954f653a870a7/690b0702d92ceadd36880f41_Grold-Medium.otf')
+    format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Grold';
+  src: url('https://cdn.prod.website-files.com/690ae8b659b954f653a870a7/690b0702068ddf48465c6e75_Grold-Regular.otf')
+    format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   Act Security - design tokens
+   Brand values lifted verbatim from act.security's stylesheet:
+     --brand-red  #f94351   (coral - primary ink / CTA / logo)
+     --brand-color #e7f183  (lime - primary highlight)
+     --dark-yellow #e7ff83  (brighter lime variant)
+   Display type: Grold (geometric rounded sans). Two on-brand themes -
+   light = warm cream + navy ink (matches Act's marketing surface),
+   dark  = brand navy (operator-friendly dashboard).
+   ============================================================ */
+
+:root,
+[data-theme='dark'] {
+  --bg: #181b27; /* brand navy, deepened */
+  --surface-1: #1f2230;
+  --surface-2: #262a3a; /* ≈ Act marketing navy #262a3e */
+  --surface-3: #2f3447;
+  --border: #363b4f;
+  --border-strong: #474d63;
+
+  --text-1: #f3f4f8;
+  --text-2: #a6aec1;
+  --text-3: #6d7589;
+
+  --accent: #e7ff83; /* lime (dark-yellow) - pops on navy; "secured / go" */
+  --accent-ink: #181b27; /* navy text on lime */
+  --accent-soft: #3a431f;
+  --accent-strong: #e7ff83; /* lime as a FOREGROUND (text/icons/lines) - on navy, identical to accent */
+
+  --brand-red: #f94351; /* coral/red - Act's CTA + logo */
+  --brand-red-ink: #fbfbe9; /* cream wordmark on red, as on their avatar */
+  --brand-red-hover: #fb5863;
+
+  --ok: #7fe08a; /* connected / healthy */
+  --info: #54c7f5; /* connecting / syncing */
+  --warn: #f5b945; /* needs attention */
+  --degraded: #f59e5b; /* partial - some data flowing */
+  --danger: #ff5c68; /* error / failed (coral family) */
+
+  --ring: rgba(231, 255, 131, 0.5);
+  --ring-red: rgba(249, 67, 81, 0.45);
+  --shadow: 0 14px 36px -10px rgba(0, 0, 0, 0.66);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='light'] {
+  --bg: #fbfbe9; /* Act's warm cream */
+  --surface-1: #ffffff;
+  --surface-2: #f7f6e6; /* faint cream so nested cards separate from white surface-1 */
+  --surface-3: #efeed6; /* warm cream tint - deeper for clearer fills/inputs */
+  --border: #d6d3b3; /* stronger so cards read against the cream page */
+  --border-strong: #bdb996;
+
+  --text-1: #1c1f2b; /* near-black navy ink - strong contrast */
+  --text-2: #4b5160; /* ~7:1 on white */
+  --text-3: #646b7a; /* ~4.6:1 on white - passes for secondary text */
+
+  --accent: #e7f183; /* brand lime, used as solid FILLS (buttons, toggle) with dark ink */
+  --accent-ink: #20240f;
+  --accent-soft: #eef4c2;
+  --accent-strong: #5f6a0d; /* dark olive-lime - the accent as readable FOREGROUND on light surfaces (~5:1) */
+
+  --brand-red: #f94351; /* same brand coral - used on cream in their marketing */
+  --brand-red-ink: #ffffff;
+  --brand-red-hover: #e23643;
+
+  --ok: #157d3b; /* darker green for AA on white */
+  --info: #0a6cbf;
+  --warn: #8f520a;
+  --degraded: #9c5709;
+  --danger: #cf2333;
+
+  --ring: rgba(160, 180, 40, 0.45);
+  --ring-red: rgba(249, 67, 81, 0.32);
+  --shadow: 0 14px 34px -12px rgba(38, 42, 62, 0.22);
+  --shadow-sm: 0 1px 2px rgba(38, 42, 62, 0.1);
+}
+
+:root {
+  --font-display: 'Grold', 'Poppins', 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* Headings carry the brand display face; body stays on the SaaS sans. */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+}
+
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* screenshot mode: freeze entry animations for clean captures */
+.still *,
+.still *::before,
+.still *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* thin scrollbars */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes panel-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes panel-pop {
+  from {
+    transform: scale(0.97) translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes heartbeat-thump {
+  0% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.42);
+  }
+  20% {
+    transform: scale(1);
+  }
+  32% {
+    transform: scale(1.28);
+  }
+  44% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes heartbeat-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+.hb-core {
+  animation: heartbeat-thump 1.8s ease-in-out infinite;
+}
+.hb-ring {
+  animation: heartbeat-ring 1.8s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hb-core {
+    animation: none;
+  }
+  .hb-ring {
+    animation: none;
+    opacity: 0.3;
+  }
+}
+
+@layer components {
+  .surface {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-150 cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+    box-shadow: 0 0 0 4px var(--ring);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-2);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--text-1);
+    background: var(--surface-3);
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+  }
+
+  /* Act.security marketing CTA - red pill, white text, lift + glow on hover */
+  .btn-brand {
+    background: var(--brand-red);
+    color: var(--brand-red-ink);
+    border-radius: 999px;
+    padding-left: 22px;
+    padding-right: 22px;
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--brand-red) 70%, transparent);
+  }
+  .btn-brand:hover:not(:disabled) {
+    background: var(--brand-red-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px -8px color-mix(in srgb, var(--brand-red) 75%, transparent),
+      0 0 0 4px var(--ring-red);
+  }
+
+  .field {
+    @apply w-full rounded-lg px-3 py-2.5 text-sm transition-colors;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-family: inherit;
+  }
+  .field::placeholder {
+    color: var(--text-3);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .label {
+    @apply block text-xs font-semibold mb-1.5;
+    color: var(--text-2);
+  }
+}
+
+/* ============================================================
+   Deck - print-ready 16:9 slides reusing the brand tokens.
+   Each .slide is exactly 1280×720; @media print emits one
+   slide per landscape page for a clean PDF export.
+   ============================================================ */
+.deck {
+  background: var(--bg);
+  min-height: 100%;
+  padding: 40px 0 80px;
+}
+.deck-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.slide {
+  width: 1280px;
+  height: 720px;
+  margin: 0 auto 28px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+}
+.slide-pad {
+  padding: 64px 72px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.slide-kicker {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.slide-num {
+  position: absolute;
+  bottom: 28px;
+  right: 36px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.slide-brand {
+  position: absolute;
+  bottom: 26px;
+  left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: -0.02em;
+}
+
+@media print {
+  @page {
+    size: 1280px 720px;
+    margin: 0;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .deck-rail {
+    display: none !important;
+  }
+  .deck {
+    padding: 0;
+  }
+  .deck-spacer {
+    display: none !important;
+  }
+  .slide {
+    margin: 0;
+    height: 716px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .slide:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}
